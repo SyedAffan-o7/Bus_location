@@ -61,6 +61,8 @@ function App() {
   const [currentPosition, setCurrentPosition] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const [speedKmh, setSpeedKmh] = useState(20);
+
   const frameRef = useRef(null);
   const startTimeRef = useRef(null);
   const mapCenterRef = useRef(null);
@@ -123,7 +125,6 @@ function App() {
       const nextPoint = route[positionIndex + 1];
 
       if (nextPoint) {
-        const speedKmh = route.length > 500 ? 60 : 20;
         const speedMps = speedKmh / 3.6;
         const distance = getDistance(
           currentPoint[0],
@@ -161,7 +162,7 @@ function App() {
     frameRef.current = requestAnimationFrame(animateMarker);
 
     return () => cancelAnimationFrame(frameRef.current);
-  }, [isPlaying, positionIndex, route, loading]);
+  }, [isPlaying, positionIndex, route, loading, speedKmh]);
 
   const handlePlayPause = () => setIsPlaying(!isPlaying);
 
@@ -174,11 +175,18 @@ function App() {
     startTimeRef.current = null;
   };
 
+  const handleSpeedUp = () => {
+    setSpeedKmh((prevSpeed) => Math.min(prevSpeed + 10, 100));
+  };
+
+  const handleSlowDown = () => {
+    setSpeedKmh((prevSpeed) => Math.max(prevSpeed - 10, 10));
+  };
+
   if (loading) {
     return <p>Loading map data...</p>;
   }
 
-  const speedKmh = route.length > 200 ? 60 : 20;
   let elapsedTime = 0;
   if (route.length > 1) {
     let totalDistance = 0;
@@ -202,6 +210,10 @@ function App() {
             {isPlaying ? "Pause" : "Play"}
           </button>
           <button onClick={handleReset}>Reset</button>
+        </div>
+        <div className="button-group">
+          <button onClick={handleSlowDown}>Slow Down</button>
+          <button onClick={handleSpeedUp}>Speed Up</button>
         </div>
         <div className="metadata">
           <p>
